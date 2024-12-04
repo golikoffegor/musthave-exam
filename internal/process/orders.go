@@ -35,7 +35,8 @@ func (o *order) StartTransactionProcessing(ctx context.Context) {
 		default:
 			transactions, err := o.repo.GetNewTransactions(ctx)
 			if err != nil {
-				o.log.Error("Failed to get new transactions: ", err)
+				o.log.WithError(err).Warning("Failed to get new transactions")
+				// o.log.Error("Failed to get new transactions: ", err)
 				time.Sleep(1 * time.Minute) // Retry after some time
 				continue
 			}
@@ -58,32 +59,36 @@ func (o *order) processTransaction(ctx context.Context, transaction model.Transa
 		default:
 			accrualResponse, err := app.FetchAccrual(o.address, transaction.ID)
 			if err != nil {
-				o.log.Info("Error fetching accrual for transaction", transaction.ID, err)
+				o.log.WithError(err).Info("Error fetching accrual for transaction")
 				time.Sleep(o.iterTime) // Retry after some time
 				continue
 			}
 
 			switch accrualResponse.Status {
 			case "REGISTERED":
+				o.log.Info("REGISTERED", transaction.ID)
 				err = o.repo.UpdateTransactionStatus(ctx, transaction.ID, "PROCESSING")
 			case "INVALID":
+				o.log.Info("INVALID", transaction.ID)
 				err = o.repo.UpdateTransactionStatus(ctx, transaction.ID, "INVALID")
 				if err == nil {
 					return // Stop processing
 				}
 			case "PROCESSING":
+				o.log.Info("PROCESSING", transaction.ID)
 				if transaction.Status == "NEW" {
 					err = o.repo.UpdateTransactionStatus(ctx, transaction.ID, "PROCESSING")
 				}
 			case "PROCESSED":
 				err = o.repo.UpdateTransactionStatusAndAccrual(ctx, transaction.ID, "PROCESSED", accrualResponse.Accrual)
 				if err == nil {
+					o.log.Info("PROCESSED", transaction.ID)
 					return // Stop processing
 				}
 			}
 
 			if err != nil {
-				o.log.Info("Error updating status for transaction", transaction.ID, err)
+				o.log.WithError(err).Warning("Error updating status for transaction", transaction.ID)
 			}
 
 			time.Sleep(1 * time.Minute) // Polling interval

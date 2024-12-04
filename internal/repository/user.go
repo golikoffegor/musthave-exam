@@ -62,20 +62,30 @@ func (r *repo) GetUser(ctx context.Context, id int64) (model.User, error) {
 }
 
 func (r *repo) GetBalance(ctx context.Context, userID int64) (model.Balance, error) {
-	var balance model.Balance
+	var mbalance model.Balance
+	var balance sql.NullFloat64
 	query := `SELECT balance FROM "user" WHERE id = $1`
-	err := r.db.QueryRowContext(ctx, query, userID).Scan(&balance.Current)
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&balance)
 	if err != nil {
-		r.log.WithError(err).Error("Failed to get balance")
-		return balance, err
+		r.log.WithError(err).Error("GetBalance:Failed to get balance")
+		return mbalance, err
 	}
 
+	var withdrawn sql.NullFloat64
 	queryWithdrawn := `SELECT SUM(summ) FROM transactions WHERE user_id = $1 AND action = 'Withdraw'`
-	err = r.db.QueryRowContext(ctx, queryWithdrawn, userID).Scan(&balance.Withdrawn)
+	err = r.db.QueryRowContext(ctx, queryWithdrawn, userID).Scan(&withdrawn)
 	if err != nil {
 		r.log.WithError(err).Error("Failed to get withdrawn amount")
-		return balance, err
+		return mbalance, err
 	}
 
-	return balance, nil
+	if balance.Valid {
+		mbalance.Current = balance.Float64
+	}
+
+	if withdrawn.Valid {
+		mbalance.Withdrawn = withdrawn.Float64
+	}
+
+	return mbalance, nil
 }

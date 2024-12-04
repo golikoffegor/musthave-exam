@@ -68,11 +68,11 @@ func (r *repo) Withdraw(ctx context.Context, userID int64, order string, sum flo
 		}
 	}()
 
-	query := `SELECT balance FROM user_id WHERE id = $1`
+	query := `SELECT balance FROM "user" WHERE id = $1`
 	var balance float64
 	err = tx.QueryRowContext(ctx, query, userID).Scan(&balance)
 	if err != nil {
-		r.log.WithError(err).Error("Failed to get balance")
+		r.log.WithError(err).Error("Withdraw: Failed to get balance")
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (r *repo) Withdraw(ctx context.Context, userID int64, order string, sum flo
 		return err
 	}
 
-	updateBalance := `UPDATE user_id SET balance = balance - $1 WHERE id = $2`
+	updateBalance := `UPDATE "user" SET balance = balance - $1 WHERE id = $2`
 	_, err = tx.ExecContext(ctx, updateBalance, sum, userID)
 	if err != nil {
 		r.log.WithError(err).Error("Failed to update balance")

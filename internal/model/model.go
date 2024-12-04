@@ -19,6 +19,7 @@ var (
 	ErrAddExistsOrder     = errors.New("order number already exists")
 	ErrInvalidLoginPass   = errors.New("invalid login/password")
 	ErrLoginAlreadyTaken  = errors.New("login already taken")
+	ErrEmptyResponse      = errors.New("empty response")
 )
 
 type Claims struct {

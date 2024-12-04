@@ -81,9 +81,13 @@ func FetchAccrual(address string, transactionID string) (*model.AccrualResponse,
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("resp.Body: %v\n", (resp.Body))
+	fmt.Printf("FetchAccrual resp.StatusCode: %v\n", resp.StatusCode)
 
 	var accrualResponse model.AccrualResponse
+	if resp.StatusCode == http.StatusNoContent {
+		return &accrualResponse, nil
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&accrualResponse); err != nil {
 		return nil, err
 	}
