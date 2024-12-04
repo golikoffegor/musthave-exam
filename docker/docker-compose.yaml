@@ -12,9 +12,9 @@ services:
     ports:
       - "${APP_GOPH_PORT}:${APP_GOPH_PORT}"
     environment:
-      - DATABASE_URI=${DATABASE_URI}
-      - RUN_ADDRESS=${RUN_ADDRESS}
-      - ACCRUAL_SYSTEM_ADDRESS=${ACCRUAL_SYSTEM_ADDRESS}
+      - DATABASE_URI=${DATABASE_URI:?Please configure DATABASE_URI in the .env file}
+      - RUN_ADDRESS=${RUN_ADDRESS:?Please configure RUN_ADDRESS in the .env file}
+      - ACCRUAL_SYSTEM_ADDRESS=${ACCRUAL_SYSTEM_ADDRESS:?Please configure ACCRUAL_SYSTEM_ADDRESS in the .env file}
     depends_on:
       - postgres
     networks:
@@ -27,8 +27,9 @@ services:
     ports:
       - "${APP_ACCUR_PORT}:${APP_ACCUR_PORT}"
     environment:
-      - DATABASE_URI=${DATABASE_URI}
-      - RUN_ADDRESS_ACCUR=${RUN_ADDRESS_ACCUR}
+      - APP_ACCUR_PORT=${APP_ACCUR_PORT:?Please configure APP_ACCUR_PORT in the .env file}
+      - DATABASE_URI=${DATABASE_URI:?Please configure DATABASE_URI in the .env file}
+      - RUN_ADDRESS_ACCUR=${RUN_ADDRESS_ACCUR:?Please configure RUN_ADDRESS_ACCUR in the .env file}
     depends_on:
       - postgres
     networks:

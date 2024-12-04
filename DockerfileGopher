@@ -1,5 +1,12 @@
 # Dockerfile for /cmd/gophermart
-FROM golang:1.21.8
+FROM golang:1.21.8 AS build
+
+# Установка protoc
+RUN apt-get update && apt-get install -y protobuf-compiler
+
+# Установка плагинов для Go
+# RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+# RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 # set work directory
 WORKDIR /project/gphrmrt/
@@ -8,8 +15,10 @@ WORKDIR /project/gphrmrt/
 COPY go.sum go.mod .
 COPY internal ./internal
 COPY cmd ./cmd
+COPY docs ./docs
 COPY migrations ./migrations
 RUN go mod download
+# RUN protoc --go_out=. --go-grpc_out=. proto/example.proto
 RUN go build -o . /project/gphrmrt/cmd/gophermart/.
 
 LABEL type="gophermart"

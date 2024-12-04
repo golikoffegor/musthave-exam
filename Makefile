@@ -58,6 +58,10 @@ config:			## Show Docker config
 up:			## Run Docker services
 	docker compose ${DOCKER_COMPOSE_FILES} up --detach
 
+.PHONY: build
+build:			## Build Docker services
+	docker compose ${DOCKER_COMPOSE_FILES} build
+
 .PHONY: down
 down:			## Stop Docker services
 	docker compose ${DOCKER_COMPOSE_FILES} down

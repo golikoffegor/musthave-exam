@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"musthave-exam/internal/repository"
-	"musthave-exam/internal/settings"
+	"github.com/golikoffegor/musthave-exam/internal/repository"
+	"github.com/golikoffegor/musthave-exam/internal/settings"
 
 	"github.com/sirupsen/logrus"
 )

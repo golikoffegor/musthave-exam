@@ -1,8 +1,11 @@
 package router
 
 import (
-	"musthave-exam/internal/handler"
 	"net/http"
+
+	"github.com/golikoffegor/musthave-exam/internal/handler"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -32,7 +35,7 @@ func InitRouter(handler handler.Handler) chi.Router {
 
 	r.Route("/api/user", func(r chi.Router) {
 		r.Post("/register", handler.RegisterHandler)
-		r.Post("/login", handler.LoginHandler)
+		r.Post("/login", handler.LoginUserHandler)
 		r.Post("/orders", handler.AddOrderHandler)
 		r.Get("/orders", handler.GetOrdersHandler)
 		r.Get("/balance", handler.GetBalanceHandler)
@@ -40,10 +43,23 @@ func InitRouter(handler handler.Handler) chi.Router {
 		r.Post("/balance/withdraw", handler.WithdrawHandler)
 	})
 
-	// r.Get("/swagger/*", httpSwagger.Handler(
-	// 	httpSwagger.URL("./doc.json"), // Ссылка на ваш swagger.json
-	// ))
+	FileServer(r, "/docs", http.Dir("./docs"))
 
-	// log.Fatal(http.ListenAndServe(flags.Parse(), r))
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/docs/swagger.yaml"), // Ссылка на ваш swagger.json
+	))
+
 	return r
+}
+
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/docs/", http.FileServer(root)).ServeHTTP(w, r)
+	})
 }

@@ -2,11 +2,12 @@ package process
 
 import (
 	"context"
-	"musthave-exam/internal/app"
-	"musthave-exam/internal/model"
-	"musthave-exam/internal/process/repolistener"
-	"musthave-exam/internal/repository"
 	"time"
+
+	"github.com/golikoffegor/musthave-exam/internal/app"
+	"github.com/golikoffegor/musthave-exam/internal/model"
+	"github.com/golikoffegor/musthave-exam/internal/process/repolistener"
+	"github.com/golikoffegor/musthave-exam/internal/repository"
 
 	"github.com/sirupsen/logrus"
 )

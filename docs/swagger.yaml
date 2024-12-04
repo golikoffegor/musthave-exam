@@ -1,0 +1,241 @@
+swagger: "2.0"
+info:
+  description: "API для системы лояльности Гофермарт"
+  version: "1.0.0"
+  title: "GopherMart Loyalty System API"
+host: "localhost:8080"
+basePath: "/api"
+schemes:
+- "http"
+paths:
+  /user/register:
+    post:
+      summary: "Регистрация пользователя"
+      description: "Регистрация пользователя по логину и паролю"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Данные пользователя"
+        required: true
+        schema:
+          type: "object"
+          required:
+          - "login"
+          - "password"
+          properties:
+            login:
+              type: "string"
+            password:
+              type: "string"
+      responses:
+        200:
+          description: "Пользователь успешно зарегистрирован и аутентифицирован"
+        400:
+          description: "Неверный формат запроса"
+        409:
+          description: "Логин уже занят"
+        500:
+          description: "Внутренняя ошибка сервера"
+  /user/login:
+    post:
+      summary: "Аутентификация пользователя"
+      description: "Аутентификация пользователя по логину и паролю"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Данные пользователя"
+        required: true
+        schema:
+          type: "object"
+          required:
+          - "login"
+          - "password"
+          properties:
+            login:
+              type: "string"
+            password:
+              type: "string"
+      responses:
+        200:
+          description: "Пользователь успешно аутентифицирован"
+        400:
+          description: "Неверный формат запроса"
+        401:
+          description: "Неверная пара логин/пароль"
+        500:
+          description: "Внутренняя ошибка сервера"
+  /user/orders:
+    post:
+      summary: "Загрузка номера заказа"
+      description: "Загрузка номера заказа для расчета"
+      consumes:
+      - "text/plain"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Номер заказа"
+        required: true
+        schema:
+          type: "string"
+      - in: "header"
+        name: "Authorization"
+        description: "Bearer token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Номер заказа уже был загружен этим пользователем"
+        202:
+          description: "Новый номер заказа принят в обработку"
+        400:
+          description: "Неверный формат запроса"
+        401:
+          description: "Пользователь не аутентифицирован"
+        409:
+          description: "Номер заказа уже был загружен другим пользователем"
+        422:
+          description: "Неверный формат номера заказа"
+        500:
+          description: "Внутренняя ошибка сервера"
+    get:
+      summary: "Получение списка загруженных номеров заказов"
+      description: "Получение списка загруженных пользователем номеров заказов"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Bearer token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Список номеров заказов"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                number:
+                  type: "string"
+                status:
+                  type: "string"
+                accrual:
+                  type: "number"
+                uploaded_at:
+                  type: "string"
+                  format: "date-time"
+        204:
+          description: "Нет данных для ответа"
+        401:
+          description: "Пользователь не авторизован"
+        500:
+          description: "Внутренняя ошибка сервера"
+  /user/balance:
+    get:
+      summary: "Получение текущего баланса пользователя"
+      description: "Получение текущего баланса счета баллов лояльности пользователя"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Bearer token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Текущий баланс пользователя"
+          schema:
+            type: "object"
+            properties:
+              current:
+                type: "number"
+              withdrawn:
+                type: "number"
+        401:
+          description: "Пользователь не авторизован"
+        500:
+          description: "Внутренняя ошибка сервера"
+  /user/balance/withdraw:
+    post:
+      summary: "Запрос на списание средств"
+      description: "Запрос на списание баллов с накопительного счета в счет оплаты нового заказа"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Данные для списания"
+        required: true
+        schema:
+          type: "object"
+          required:
+          - "order"
+          - "sum"
+          properties:
+            order:
+              type: "string"
+            sum:
+              type: "number"
+      - in: "header"
+        name: "Authorization"
+        description: "Bearer token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Запрос успешно обработан"
+        401:
+          description: "Пользователь не авторизован"
+        402:
+          description: "На счету недостаточно средств"
+        422:
+          description: "Неверный номер заказа"
+        500:
+          description: "Внутренняя ошибка сервера"
+  /user/withdrawals:
+    get:
+      summary: "Получение информации о выводе средств"
+      description: "Получение информации о выводе средств с накопительного счета пользователем"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Bearer token"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Информация о выводе средств"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                order:
+                  type: "string"
+                sum:
+                  type: "number"
+                processed_at:
+                  type: "string"
+                  format: "date-time"
+        204:
+          description: "Нет данных о выводе средств"
+        401:
+          description: "Пользователь не авторизован"
+        500:
+          description: "Внутренняя ошибка сервера"

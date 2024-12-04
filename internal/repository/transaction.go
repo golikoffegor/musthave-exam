@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"musthave-exam/internal/model"
-	"time"
+
+	"github.com/golikoffegor/musthave-exam/internal/model"
 )
 
 func (r *repo) AddOrder(ctx context.Context, userID int64, number string) (*model.Transaction, error) {
@@ -26,16 +26,14 @@ func (r *repo) AddOrder(ctx context.Context, userID int64, number string) (*mode
 			return nil, model.ErrAddExistsOrder
 		}
 	} else {
-		query = `INSERT INTO transactions (id, user_id, summ, date, status, action) 
-		VALUES ($1, $2, $3, $4, 'NEW', 'Debit')
-		RETURNING id, user_id, summ, date, status, action`
-		row := r.db.QueryRowContext(ctx, query, number, userID, 0, time.Now())
+		query = `INSERT INTO transactions (id, user_id, summ, status, action) VALUES ($1, $2, $3, 'NEW', 'Debit') RETURNING id, user_id, summ, status, action, date`
+		row := r.db.QueryRowContext(ctx, query, number, userID, 0)
 		// if err != nil {
 		// 	r.log.WithError(err).Error("Failed to add order")
 		// 	return nil, err
 		// }
 		var transaction model.Transaction
-		if err := row.Scan(&transaction.ID, &transaction.UserID, &transaction.Summ, &transaction.Date, &transaction.Status, &transaction.Action); err != nil {
+		if err := row.Scan(&transaction.ID, &transaction.UserID, &transaction.Summ, &transaction.Status, &transaction.Action, &transaction.Date); err != nil {
 			r.log.WithError(err).Error(model.ErrAddOrder)
 			return nil, err
 		}
@@ -70,9 +68,13 @@ func (r *repo) Withdraw(ctx context.Context, userID int64, order string, sum flo
 
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				r.log.WithError(err).Fatal("tx.Rollback() failed")
+			}
 		} else {
-			tx.Commit()
+			if err := tx.Commit(); err != nil {
+				r.log.WithError(err).Info("tx.Commit() failed")
+			}
 		}
 	}()
 
@@ -96,8 +98,8 @@ func (r *repo) Withdraw(ctx context.Context, userID int64, order string, sum flo
 		return err
 	}
 
-	insertTransaction := `INSERT INTO transactions (id, user_id, summ, date, status, action) VALUES ($1, $2, $3, $4, 'NEW', 'Withdraw')`
-	_, err = tx.ExecContext(ctx, insertTransaction, order, userID, RoundToFiveDecimalPlaces(sum), time.Now())
+	insertTransaction := `INSERT INTO transactions (id, user_id, summ, status, action) VALUES ($1, $2, $3, 'NEW', 'Withdraw')`
+	_, err = tx.ExecContext(ctx, insertTransaction, order, userID, RoundToFiveDecimalPlaces(sum))
 	if err != nil {
 		r.log.WithError(err).Error("Failed to insert transaction")
 		return err
@@ -156,7 +158,9 @@ func (r *repo) UpdateTransactionStatusAndAccrual(ctx context.Context, transactio
 	query := `UPDATE transactions SET status = $1, summ = $2 WHERE id = $3`
 	_, err = tx.ExecContext(ctx, query, status, accrual, transactionID)
 	if err != nil {
-		tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			r.log.WithError(err).Fatal("tx.Rollback() failed")
+		}
 		r.log.WithError(err).Error("Failed to update transaction status and accrual")
 		return err
 	}
@@ -167,7 +171,9 @@ func (r *repo) UpdateTransactionStatusAndAccrual(ctx context.Context, transactio
 		query = `SELECT user_id FROM transactions WHERE id = $1`
 		err = tx.QueryRowContext(ctx, query, transactionID).Scan(&userID)
 		if err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				r.log.WithError(err).Fatal("tx.Rollback() failed")
+			}
 			r.log.WithError(err).Error("Failed to get user_id for transaction")
 			return err
 		}
@@ -175,7 +181,9 @@ func (r *repo) UpdateTransactionStatusAndAccrual(ctx context.Context, transactio
 		query = `UPDATE "user" SET balance = balance + $1 WHERE id = $2`
 		_, err = tx.ExecContext(ctx, query, RoundToFiveDecimalPlaces(accrual), userID)
 		if err != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				r.log.WithError(err).Fatal("tx.Rollback() failed")
+			}
 			r.log.WithError(err).Error("Failed to update user balance")
 			return err
 		}

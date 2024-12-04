@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"musthave-exam/internal/model"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golikoffegor/musthave-exam/internal/model"
 
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -14,13 +15,6 @@ const TokenExp = time.Hour * 3
 const SecretKey = "supersecretkey"
 
 func (h *Handler) isValidAuth(_ http.ResponseWriter, r *http.Request) (int64, bool) {
-	// session, _ := store.Get(r, "session")
-	// UserID, ok := session.Values["user_id"].(int64)
-	// if !ok {
-	// 	return 0, false
-	// }
-	// return UserID, true
-
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return 0, false

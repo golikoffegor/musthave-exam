@@ -1,5 +1,5 @@
 # Dockerfile for /cmd/accrual/accrual_linux_amd64
-FROM golang:1.21.8
+FROM golang:1.21.8 AS build
 
 WORKDIR /project/acrl/
 
@@ -9,4 +9,4 @@ COPY cmd/accrual/accrual_linux_amd64 .
 LABEL type="accrual"
 
 # Run the application
-CMD ["/project/acrl/accrual_linux_amd64", "-d=${DATABASE_URI}", "-a=:8020"]
+CMD ["/project/acrl/accrual_linux_amd64", "-d=${DATABASE_URI}", "-a=:8080"]

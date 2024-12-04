@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"log"
 	"math"
-	"musthave-exam/internal/model"
-	"musthave-exam/internal/process/repolistener"
-	"musthave-exam/migrations"
 	"time"
+
+	"github.com/golikoffegor/musthave-exam/internal/model"
+	"github.com/golikoffegor/musthave-exam/internal/process/repolistener"
+	"github.com/golikoffegor/musthave-exam/migrations"
 
 	"github.com/pressly/goose/v3"
 	"github.com/sirupsen/logrus"
@@ -25,11 +26,11 @@ const (
 	Withdraw = "Withdraw"
 )
 
-type UserRepository interface {
-	RegisterUser(ctx context.Context, user model.User) (int64, error)
-	LoginUser(ctx context.Context, user model.User) (int64, error)
-	GetUser(ctx context.Context, id int64) (model.User, error)
-}
+// type UserRepository interface {
+// 	RegisterUser(ctx context.Context, user model.User) (int64, error)
+// 	LoginUser(ctx context.Context, user model.User) (int64, error)
+// 	GetUser(ctx context.Context, id int64) (model.User, error)
+// }
 
 type Repository interface {
 	RegisterUser(ctx context.Context, user model.User) (int64, error)

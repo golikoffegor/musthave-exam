@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
-	"musthave-exam/internal/app"
-	"musthave-exam/internal/handler"
-	"musthave-exam/internal/process"
-	"musthave-exam/internal/repository"
-	"musthave-exam/internal/router"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/golikoffegor/musthave-exam/internal/app"
+	"github.com/golikoffegor/musthave-exam/internal/handler"
+	"github.com/golikoffegor/musthave-exam/internal/process"
+	"github.com/golikoffegor/musthave-exam/internal/repository"
+	"github.com/golikoffegor/musthave-exam/internal/router"
 
 	"github.com/sirupsen/logrus"
 )

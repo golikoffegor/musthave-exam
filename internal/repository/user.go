@@ -3,10 +3,21 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"musthave-exam/internal/model"
+
+	"github.com/golikoffegor/musthave-exam/internal/model"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// func (r *repo) CheckUserExisis(ctx context.Context, user model.User) (int64, error) {
+// 	query := `SELECT id FROM "user" WHERE login=$1`
+// 	var userID int64
+// 	err := r.db.QueryRowContext(ctx, query, user.Login).Scan(&userID)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return userID, nil
+// }
 
 func (r *repo) RegisterUser(ctx context.Context, user model.User) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
