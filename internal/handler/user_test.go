@@ -9,11 +9,12 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/golikoffegor/musthave-exam/internal/mocks"
 	"github.com/golikoffegor/musthave-exam/internal/model"
 	"github.com/golikoffegor/musthave-exam/internal/settings"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_handler_RegisterHandler(t *testing.T) {

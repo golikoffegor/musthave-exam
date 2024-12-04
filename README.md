@@ -47,3 +47,7 @@ make up
 ```
 # Использование
 Интерфейс ручного ввода данных находится по адресу [Swagger](http://localhost:8080/swagger/)
+
+# Статистика приложения
+[Prometheus](http://localhost:19090)
+[pgAdmin](http://localhost:7080/browser/)
