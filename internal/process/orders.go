@@ -60,13 +60,13 @@ func (o *order) StartTransactionProcessing(ctx context.Context, r repository.Rep
 
 func (o *order) processTransaction(ctx context.Context, transaction model.Transaction) {
 	for {
-		// o.log.Info("Started processTransaction ", transaction.ID)
+		// o.log.Debug("Started processTransaction ", transaction.ID)
 		select {
 		case <-ctx.Done():
 			o.log.Info("Stopping processing for transaction due to context cancellation", transaction.ID)
 			return
 		default:
-			// o.log.Info("Check processTransaction ", transaction.ID)
+			o.log.Debug("Check processTransaction ", transaction.ID)
 			accrualResponse, err := app.FetchAccrual(o.address, transaction.ID, o.log)
 			if err != nil {
 				o.log.WithError(err).Info("Error fetching accrual for transaction")

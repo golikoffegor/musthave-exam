@@ -1,12 +1,17 @@
 # Dockerfile for /cmd/accrual/accrual_linux_amd64
-FROM golang:1.21.8 AS build
+FROM golang:1.22
 
-WORKDIR /project/acrl/
+ARG GITHUB_PATH=github
+ARG BUILD_DATABASE_URI
+ARG BUILD_ADDRESS_ACCUR
 
-# Copy the precompiled binary
-COPY cmd/accrual/accrual_linux_amd64 .
+ENV DATABASE_URI ${BUILD_DATABASE_URI}
+ENV RUN_ADDRESS_ACCUR=${BUILD_ADDRESS_ACCUR}
 
-LABEL type="accrual"
+# RUN apk --no-cache add ca-certificates
 
-# Run the application
-CMD ["/project/acrl/accrual_linux_amd64", "-d=${DATABASE_URI}", "-a=:8080"]
+WORKDIR /root/
+
+COPY cmd/accrual/accrual_linux_amd64 ./accrual
+
+ENTRYPOINT ./accrual -d=${DATABASE_URI} -a=:8020

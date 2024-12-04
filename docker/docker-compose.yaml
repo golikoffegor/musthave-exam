@@ -17,6 +17,7 @@ services:
       - ACCRUAL_SYSTEM_ADDRESS=${ACCRUAL_SYSTEM_ADDRESS:?Please configure ACCRUAL_SYSTEM_ADDRESS in the .env file}
     depends_on:
       - postgres
+      - accrual
     networks:
       - musthave-exam-network
   
@@ -28,8 +29,8 @@ services:
       - "${APP_ACCUR_PORT}:${APP_ACCUR_PORT}"
     environment:
       - APP_ACCUR_PORT=${APP_ACCUR_PORT:?Please configure APP_ACCUR_PORT in the .env file}
-      - DATABASE_URI=${DATABASE_URI:?Please configure DATABASE_URI in the .env file}
-      - RUN_ADDRESS_ACCUR=${RUN_ADDRESS_ACCUR:?Please configure RUN_ADDRESS_ACCUR in the .env file}
+      - BUILD_DATABASE_URI=${BUILD_DATABASE_URI:?Please configure BUILD_DATABASE_URI in the .env file}
+      - BUILD_ADDRESS_ACCUR=${BUILD_ADDRESS_ACCUR:?Please configure BUILD_ADDRESS_ACCUR in the .env file}
     depends_on:
       - postgres
     networks:
