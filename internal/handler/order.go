@@ -191,9 +191,42 @@ func (h *Handler) WithdrawHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, model.ErrErrorRequestBody.Error()+": "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var raw map[string]json.RawMessage
+	err = json.Unmarshal(body, &raw)
+	if err != nil {
+		h.log.WithError(err).Warning(model.ErrInvalidLoginAndPass.Error())
+		http.Error(w, model.ErrInvalidLoginAndPass.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(raw) > 2 {
+		h.log.WithField("JSON", model.ErrInternalServer.Error()).Info(model.ErrInternalServer.Error())
+		http.Error(w, model.ErrInternalServer.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := isValidJSON(body); err != nil {
+		h.log.WithField("ValidJSON", err.Error()).Info(model.ErrFailedToDecodeJSON.Error())
+		http.Error(w, model.ErrFailedToDecodeJSON.Error()+": "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	var withdrawRequest model.WithdrawRequest
-	if err := json.NewDecoder(r.Body).Decode(&withdrawRequest); err != nil {
+	if err := json.Unmarshal(body, &withdrawRequest); err != nil {
 		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		return
+	}
+
+	if len(withdrawRequest.Order) == 0 ||
+		withdrawRequest.Sum == 0 {
+		h.log.WithError(err).Error(model.ErrInternalServer.Error())
+		http.Error(w, model.ErrInternalServer.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -203,7 +236,7 @@ func (h *Handler) WithdrawHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	err := h.repo.Withdraw(ctx, userID, withdrawRequest.Order, withdrawRequest.Sum)
+	err = h.repo.Withdraw(ctx, userID, withdrawRequest.Order, withdrawRequest.Sum)
 	if err != nil {
 		if err.Error() == model.ErrIncFunds.Error() {
 			http.Error(w, model.ErrIncFunds.Error(), http.StatusPaymentRequired)

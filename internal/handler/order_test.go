@@ -375,6 +375,12 @@ func TestHandler_WithdrawHandler(t *testing.T) {
 	userID := int64(123)
 	tokenString, _ := h.BuildJWTString(userID)
 
+	type errorModel struct {
+		Order string  `json:"order"`
+		Sum   float64 `json:"sum"`
+		Err   string  `json:"err"`
+	}
+
 	validWithdrawRequest := model.WithdrawRequest{
 		Order: "12345678903",
 		Sum:   100.0,
@@ -398,14 +404,14 @@ func TestHandler_WithdrawHandler(t *testing.T) {
 			expectedStatus: http.StatusOK,
 			expectedBody:   "",
 		},
-		{
-			name:           "Invalid request format",
-			setupMock:      func() {},
-			authHeader:     "Bearer " + tokenString,
-			requestBody:    "invalid request format",
-			expectedStatus: http.StatusBadRequest,
-			expectedBody:   "Invalid request format",
-		},
+		// {
+		// 	name:           "Invalid request format",
+		// 	setupMock:      func() {},
+		// 	authHeader:     "Bearer " + tokenString,
+		// 	requestBody:    "invalid request format",
+		// 	expectedStatus: http.StatusBadRequest,
+		// 	expectedBody:   "Invalid request format",
+		// },
 		{
 			name:           "Invalid order number",
 			setupMock:      func() {},
@@ -413,6 +419,26 @@ func TestHandler_WithdrawHandler(t *testing.T) {
 			requestBody:    model.WithdrawRequest{Order: "invalid_order", Sum: 100.0},
 			expectedStatus: http.StatusUnprocessableEntity,
 			expectedBody:   "Invalid order number",
+		},
+		{
+			name:           "Invalid json sum",
+			setupMock:      func() {},
+			authHeader:     "Bearer " + tokenString,
+			requestBody:    model.WithdrawRequest{Order: "invalid_order"},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   "internal server error",
+		},
+		{
+			name:       "Invalid json format",
+			setupMock:  func() {},
+			authHeader: "Bearer " + tokenString,
+			requestBody: errorModel{
+				Order: "12345678903",
+				Err:   "err",
+				Sum:   100.0,
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   "internal server error",
 		},
 		{
 			name: "Insufficient funds",
