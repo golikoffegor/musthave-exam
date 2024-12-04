@@ -1,0 +1,5 @@
+name: musthave-exam
+
+networks:
+  musthave-exam-network:
+    driver: bridge
