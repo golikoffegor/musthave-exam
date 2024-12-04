@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 	id numeric NOT NULL,
 	user_id bigint NULL,
 	summ numeric NULL,
-	date date NULL,
+	date timestamp NULL,
 	status t_status NOT NULL,
 	action t_action NOT NULL,
 	CONSTRAINT transactions_user_fk_1 FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,

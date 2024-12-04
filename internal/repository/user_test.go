@@ -6,17 +6,16 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/golikoffegor/musthave-exam/internal/mocks"
-	"github.com/golikoffegor/musthave-exam/internal/model"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
+	"github.com/golikoffegor/musthave-exam/internal/mocks"
+	"github.com/golikoffegor/musthave-exam/internal/model"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Test_repo_RegisterUser(t *testing.T) {
+func Test_repoRegisterUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("ошибка при создании mock базы данных: %v", err)
@@ -42,6 +41,9 @@ func Test_repo_RegisterUser(t *testing.T) {
 	assert.NotEmpty(t, mockRepo)
 
 	// Expectation for successful registration
+	mock.ExpectQuery(`SELECT id FROM "user" WHERE login = \$1`).
+		WithArgs(user.Login).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}))
 	mock.ExpectQuery(`INSERT INTO "user" \(login, password, balance\) VALUES \(\$1, \$2, \$3\) RETURNING id`).
 		WithArgs(user.Login, sqlmock.AnyArg(), 0).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
@@ -51,9 +53,9 @@ func Test_repo_RegisterUser(t *testing.T) {
 	assert.Equal(t, int64(1), id)
 
 	// Expectation for login already taken
-	mock.ExpectQuery(`INSERT INTO "user" \(login, password, balance\) VALUES \(\$1, \$2, \$3\) RETURNING id`).
-		WithArgs(user.Login, sqlmock.AnyArg(), 0).
-		WillReturnError(sql.ErrNoRows)
+	mock.ExpectQuery(`SELECT id FROM "user" WHERE login = \$1`).
+		WithArgs(user.Login).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 	_, err = r.RegisterUser(ctx, user)
 	assert.Equal(t, model.ErrLoginAlreadyTaken, err)
@@ -104,7 +106,7 @@ func Test_repo_LoginUser(t *testing.T) {
 		WillReturnError(sql.ErrNoRows)
 
 	_, err = r.LoginUser(ctx, user)
-	assert.Equal(t, model.ErrInvalidLoginPass, err)
+	assert.Equal(t, model.ErrInvalidLoginAndPass, err)
 
 	// Ensure all expectations were met
 	err = mock.ExpectationsWereMet()

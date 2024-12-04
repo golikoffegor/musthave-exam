@@ -3,9 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"github.com/golikoffegor/musthave-exam/internal/handler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 

@@ -12,12 +12,11 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/golikoffegor/musthave-exam/internal/mocks"
 	"github.com/golikoffegor/musthave-exam/internal/model"
 	"github.com/golikoffegor/musthave-exam/internal/repository"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 type errorReader struct{}
@@ -105,6 +104,7 @@ func TestHandler_AddOrderHandler(t *testing.T) {
 				req = httptest.NewRequest("POST", "/add-order", strings.NewReader(tt.requestBody))
 			}
 			req.Header.Set("Authorization", tt.authHeader)
+			req.Header.Set("Content-Type", "text/plain")
 
 			w := httptest.NewRecorder()
 			h.AddOrderHandler(w, req)

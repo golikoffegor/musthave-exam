@@ -38,36 +38,6 @@ func Test_repo_AddOrder(t *testing.T) {
 	_, err = r.AddOrder(ctx, userID, orderNumber)
 	assert.Error(t, err)
 
-	//TODO: декомпозировать
-	// mock.ExpectQuery(`SELECT id, user_id FROM transactions WHERE id = \$1 LIMIT 1`).
-	// 	WithArgs(orderNumber).
-	// 	WillReturnRows(sqlmock.NewRows([]string{"id", "user_id"}))
-
-	// mock.ExpectQuery(`INSERT INTO transactions (id, user_id, summ, status, action) VALUES (\$1, \$2, \$3, 'NEW', 'Debit') RETURNING id, user_id, summ, status, action, date`).
-	// 	WithArgs(orderNumber, userID, 0).
-	// 	WillReturnRows(sqlmock.NewRows([]string{"id", "user_id", "summ", "status", "action", "date"}).
-	// 		AddRow(orderNumber, userID, 0, "NEW", "Debit", time.Now()))
-
-	// transaction, err := r.AddOrder(ctx, userID, orderNumber)
-	// if err != nil {
-	// 	t.Errorf("Unexpected error: %v", err)
-	// }
-	// if transaction == nil {
-	// 	t.Error("Expected transaction to be returned, got nil")
-	// } else {
-	// 	t.Logf("Transaction added successfully: %v", transaction)
-	// }
-
-	// Проверяем ошибки
-	// assert.NoError(t, err)
-	// assert.NotNil(t, transaction)
-	// assert.Equal(t, userID, transaction.UserID)
-	// assert.Equal(t, orderNumber, transaction.ID)
-	// assert.Equal(t, float64(0), transaction.Summ)
-	// assert.Equal(t, "NEW", transaction.Status)
-	// assert.Equal(t, "Debit", transaction.Action)
-
-	// Case 2: Order exists for a different user
 	mock.ExpectQuery(`SELECT id, user_id FROM transactions WHERE id = \$1 LIMIT 1`).
 		WithArgs(orderNumber).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "user_id"}).

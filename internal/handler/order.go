@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/golikoffegor/musthave-exam/internal/model"
@@ -23,7 +24,25 @@ func (h *Handler) AddOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Header.Get("Content-Type") != "text/plain" {
+		http.Error(w, "Unexpected content type", http.StatusBadRequest)
+		return
+	}
+
 	orderNumber := strings.TrimSpace(string(body))
+
+	match, err := regexp.MatchString("^[0-9]+$", orderNumber)
+	if err != nil {
+		h.log.WithError(err).WithField("orderNumber", orderNumber).Debug("AddOrder", userID)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if !match {
+		h.log.WithField("order number should contain only digits", orderNumber).WithField("orderNumber", orderNumber).Debug("AddOrder", userID)
+		http.Error(w, "order number should contain only digits", http.StatusBadRequest)
+		return
+	}
+
 	if !h.isValidOrderNumber(orderNumber) {
 		http.Error(w, model.ErrInvalidOrderNumber.Error(), http.StatusUnprocessableEntity)
 		return

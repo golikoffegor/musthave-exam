@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/buger/jsonparser"
 	"github.com/golikoffegor/musthave-exam/internal/model"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -81,6 +83,27 @@ func (h *Handler) BuildJWTString(userID int64) (string, error) {
 
 	// возвращаем строку токена
 	return tokenString, nil
+}
+
+func isValidJSON(data []byte) error {
+	seenKeys := make(map[string]struct{})
+
+	err := jsonparser.ObjectEach(data, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+		keyStr := string(key)
+		if _, exists := seenKeys[keyStr]; exists {
+			return fmt.Errorf("duplicate key found: %s", keyStr)
+		}
+		seenKeys[keyStr] = struct{}{}
+		return nil
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key found") {
+			return err
+		}
+		return fmt.Errorf("invalid JSON format: %v", err)
+	}
+
+	return nil
 }
 
 func (h *Handler) isValidOrderNumber(number string) bool {
