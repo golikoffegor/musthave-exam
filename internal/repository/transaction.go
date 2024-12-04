@@ -44,6 +44,12 @@ func (r *repo) AddOrder(ctx context.Context, userID int64, number string) (*mode
 		return &transaction, nil
 	}
 
+	// Проверяем ошибку после Next()
+	if err := rows.Err(); err != nil {
+		r.log.WithError(err).Error("Error while iterating rows")
+		return nil, err
+	}
+
 	return nil, nil
 }
 
@@ -111,25 +117,13 @@ func (r *repo) GetOrders(ctx context.Context, userID int64, act string) ([]model
 		}
 		orders = append(orders, order)
 	}
-	return orders, nil
-}
 
-func (r *repo) GetBalance(ctx context.Context, userID int64) (model.Balance, error) {
-	var balance model.Balance
-	query := `SELECT balance FROM "user" WHERE id = $1`
-	err := r.db.QueryRowContext(ctx, query, userID).Scan(&balance.Current)
-	if err != nil {
-		r.log.WithError(err).Error("Failed to get balance")
-		return balance, err
+	if err := rows.Err(); err != nil {
+		r.log.WithError(err).Error("Error while iterating rows")
+		return nil, err
 	}
-	// queryWithdrawn := `SELECT SUM(summ) FROM transactions WHERE user_id = $1 AND action = 'Withdraw'`
-	// err = r.db.QueryRowContext(ctx, queryWithdrawn, userID).Scan(&balance.Withdrawn)
-	// if err != nil {
-	// 	r.log.WithError(err).Error("Failed to get withdrawn amount")
-	// 	return balance, err
-	// }
 
-	return balance, nil
+	return orders, nil
 }
 
 func (r *repo) UpdateTransactionStatus(ctx context.Context, transactionID string, status string) error {

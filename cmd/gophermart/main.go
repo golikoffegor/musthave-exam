@@ -20,12 +20,12 @@ func main() {
 	if err != nil {
 		ap.Logger.Fatal(err)
 	}
-	defer ap.Db.Close()
+	defer ap.DB.Close()
 
 	go handleSignals(ap.CncF, ap.Logger)
 
 	//set repo
-	repo := repository.NewRepository(ap.Db, ap.Logger)
+	repo := repository.NewRepository(ap.DB, ap.Logger)
 	//set handlers
 	vhandler := handler.NewHandler(repo, ap.Logger, ap.Flags)
 

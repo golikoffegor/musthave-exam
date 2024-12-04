@@ -52,13 +52,13 @@ func NewRepository(dbsql *sql.DB, logger *logrus.Logger) *repo {
 	return p
 }
 
-func (p *repo) migrateDB() error {
+func (r *repo) migrateDB() error {
 	goose.SetBaseFS(migrations.Migrations)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := goose.RunContext(ctx, "up", p.db, ".")
+	err := goose.RunContext(ctx, "up", r.db, ".")
 	if err != nil {
 		return err
 	}

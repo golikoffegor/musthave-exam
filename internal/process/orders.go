@@ -13,7 +13,9 @@ import (
 func NewOrderProcess(storage repository.Repository, logger *logrus.Logger, recalcAddress string) *order {
 	return &order{
 		iterTime: 1 * time.Second,
-		repo:     storage, log: logger, address: recalcAddress,
+		repo:     storage,
+		log:      logger,
+		address:  recalcAddress,
 	}
 }
 
