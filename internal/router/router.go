@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/golikoffegor/musthave-exam/internal/handler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -49,7 +50,15 @@ func InitRouter(handler handler.Handler) chi.Router {
 		httpSwagger.URL("/docs/swagger.yaml"), // Ссылка на ваш swagger.json
 	))
 
+	r.Get("/metrics", prometheusHandler())
+
 	return r
+}
+
+func prometheusHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	}
 }
 
 func FileServer(r chi.Router, path string, root http.FileSystem) {
