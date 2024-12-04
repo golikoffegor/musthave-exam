@@ -20,6 +20,7 @@ var (
 	ErrInvalidLoginPass   = errors.New("invalid login/password")
 	ErrLoginAlreadyTaken  = errors.New("login already taken")
 	ErrEmptyResponse      = errors.New("empty response")
+	ErrIncFunds           = errors.New("insufficient funds")
 )
 
 type Claims struct {
@@ -37,7 +38,7 @@ type User struct {
 type Transaction struct {
 	ID     string    `json:"number"`
 	UserID int64     `json:"user"`
-	Summ   float64   `json:"summ"`
+	Summ   float64   `json:"accrual"`
 	Date   time.Time `json:"uploaded_at"`
 	Status string    `json:"status"`
 	Action string    `json:"action"`
@@ -49,12 +50,16 @@ type AccrualResponse struct {
 	Accrual float64 `json:"accrual,omitempty"`
 }
 
-// type Order struct {
-// 	Number     string    `json:"number"`
-// 	Status     string    `json:"status"`
-// 	Accrual    float64   `json:"accrual,omitempty"`
-// 	UploadedAt time.Time `json:"uploaded_at"`
-// }
+type Withdraw struct {
+	ID   string    `json:"order"`
+	Summ float64   `json:"sum"`
+	Date time.Time `json:"processed_at"`
+}
+
+type WithdrawRequest struct {
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
+}
 
 type Balance struct {
 	Current   float64 `json:"current"`

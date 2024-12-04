@@ -49,7 +49,11 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.setAuth(w, r, userID)
-	h.log.WithField("user_id", userID).Info("User registered and logged in")
+
+	h.log.
+		WithField("userID", userID).
+		Info("RegisterHandler")
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -89,7 +93,10 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.setAuth(w, r, userID)
-	h.log.WithField("user_id", userID).Info("User logged in")
+	h.log.
+		WithField("userID", userID).
+		Info("LoginHandler")
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -112,6 +119,9 @@ func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.log.WithField("user_id", userID).Info("User data retrieved")
+	h.log.
+		WithField("userID", userID).
+		Debug("GetUserHandler")
+
 	json.NewEncoder(w).Encode(user)
 }

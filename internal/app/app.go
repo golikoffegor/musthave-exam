@@ -32,7 +32,7 @@ func NewApp() (*app, error) {
 	logg := logrus.New()
 	// logg.SetFormatter(&logrus.JSONFormatter{})
 	// logg.SetLevel(logrus.InfoLevel)
-	logg.SetLevel(logrus.DebugLevel)
+	logg.SetLevel(logrus.InfoLevel)
 	// file, err := os.OpenFile("info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	// if err != nil {
 	// 	logg.Fatal(err)
@@ -81,7 +81,7 @@ func FetchAccrual(address string, transactionID string, log *logrus.Logger) (*mo
 	}
 	defer resp.Body.Close()
 
-	log.Info("FetchAccrual resp.StatusCode: ", resp.StatusCode)
+	// log.Info("FetchAccrual resp.StatusCode: ", resp.StatusCode)
 
 	var accrualResponse model.AccrualResponse
 	if resp.StatusCode == http.StatusNoContent {

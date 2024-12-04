@@ -80,12 +80,16 @@ func (r *repo) GetBalance(ctx context.Context, userID int64) (model.Balance, err
 	}
 
 	if balance.Valid {
-		mbalance.Current = balance.Float64
+		mbalance.Current = RoundToFiveDecimalPlaces(balance.Float64)
 	}
 
 	if withdrawn.Valid {
-		mbalance.Withdrawn = withdrawn.Float64
+		mbalance.Withdrawn = RoundToFiveDecimalPlaces(withdrawn.Float64)
 	}
+
+	r.log.
+		WithField("balance", mbalance.Current).
+		Debug("GetBalance")
 
 	return mbalance, nil
 }

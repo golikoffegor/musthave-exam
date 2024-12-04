@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"math"
 	"musthave-exam/internal/model"
+	"musthave-exam/internal/process/repolistener"
 	"musthave-exam/migrations"
 	"time"
 
@@ -13,8 +15,9 @@ import (
 )
 
 type repo struct {
-	db  *sql.DB
-	log *logrus.Logger
+	db      *sql.DB
+	log     *logrus.Logger
+	process *repolistener.Listener
 }
 
 const (
@@ -43,13 +46,24 @@ type Repository interface {
 	GetNewTransactions(ctx context.Context) ([]model.Transaction, error)
 }
 
+func RoundToFiveDecimalPlaces(x float64) float64 {
+	return math.Round(x*100000) / 100000
+}
+
 func NewRepository(dbsql *sql.DB, logger *logrus.Logger) *repo {
-	p := &repo{db: dbsql, log: logger}
+	p := &repo{
+		db:  dbsql,
+		log: logger,
+	}
 	err := p.migrateDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 	return p
+}
+
+func (r *repo) SetProcess(proc *repolistener.Listener) {
+	r.process = proc
 }
 
 func (r *repo) migrateDB() error {

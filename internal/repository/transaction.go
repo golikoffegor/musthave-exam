@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"musthave-exam/internal/model"
 	"time"
 )
@@ -41,6 +40,15 @@ func (r *repo) AddOrder(ctx context.Context, userID int64, number string) (*mode
 			return nil, err
 		}
 		r.log.WithField("transaction_id", transaction.ID).Debug("Order added successfully")
+
+		// уведомляем о новом заказе
+		r.process.NewOrderChan <- transaction.ID
+
+		r.log.
+			WithField("userID", userID).
+			WithField("transaction", transaction).
+			Info("AddOrder")
+
 		return &transaction, nil
 	}
 
@@ -77,24 +85,29 @@ func (r *repo) Withdraw(ctx context.Context, userID int64, order string, sum flo
 	}
 
 	if balance < sum {
-		err = errors.New("insufficient funds")
-		r.log.WithError(err).Warning("Insufficient funds")
-		return err
+		r.log.WithError(err).Warning(model.ErrIncFunds.Error())
+		return model.ErrIncFunds
 	}
 
 	updateBalance := `UPDATE "user" SET balance = balance - $1 WHERE id = $2`
-	_, err = tx.ExecContext(ctx, updateBalance, sum, userID)
+	_, err = tx.ExecContext(ctx, updateBalance, RoundToFiveDecimalPlaces(sum), userID)
 	if err != nil {
 		r.log.WithError(err).Error("Failed to update balance")
 		return err
 	}
 
-	insertTransaction := `INSERT INTO transactions (user_id, summ, date, status, action) VALUES ($1, $2, $3, 'NEW', 'Withdraw')`
-	_, err = tx.ExecContext(ctx, insertTransaction, userID, sum, time.Now())
+	insertTransaction := `INSERT INTO transactions (id, user_id, summ, date, status, action) VALUES ($1, $2, $3, $4, 'NEW', 'Withdraw')`
+	_, err = tx.ExecContext(ctx, insertTransaction, order, userID, RoundToFiveDecimalPlaces(sum), time.Now())
 	if err != nil {
 		r.log.WithError(err).Error("Failed to insert transaction")
 		return err
 	}
+
+	r.log.
+		WithField("transactionID", order).
+		WithField("userID", userID).
+		WithField("sum", sum).
+		Info("Withdraw")
 
 	return nil
 }
@@ -133,9 +146,54 @@ func (r *repo) UpdateTransactionStatus(ctx context.Context, transactionID string
 }
 
 func (r *repo) UpdateTransactionStatusAndAccrual(ctx context.Context, transactionID string, status string, accrual float64) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		r.log.WithError(err).Error("Failed to begin transaction")
+		return err
+	}
+
+	// Обновить статус транзакции
 	query := `UPDATE transactions SET status = $1, summ = $2 WHERE id = $3`
-	_, err := r.db.ExecContext(ctx, query, status, accrual, transactionID)
-	return err
+	_, err = tx.ExecContext(ctx, query, status, accrual, transactionID)
+	if err != nil {
+		tx.Rollback()
+		r.log.WithError(err).Error("Failed to update transaction status and accrual")
+		return err
+	}
+
+	// Если статус PROCESSED, добавить сумму на баланс пользователя
+	if status == "PROCESSED" {
+		var userID int64
+		query = `SELECT user_id FROM transactions WHERE id = $1`
+		err = tx.QueryRowContext(ctx, query, transactionID).Scan(&userID)
+		if err != nil {
+			tx.Rollback()
+			r.log.WithError(err).Error("Failed to get user_id for transaction")
+			return err
+		}
+
+		query = `UPDATE "user" SET balance = balance + $1 WHERE id = $2`
+		_, err = tx.ExecContext(ctx, query, RoundToFiveDecimalPlaces(accrual), userID)
+		if err != nil {
+			tx.Rollback()
+			r.log.WithError(err).Error("Failed to update user balance")
+			return err
+		}
+
+		r.log.
+			WithField("transactionID", transactionID).
+			WithField("userID", userID).
+			WithField("sum", accrual).
+			Info("Accrual")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		r.log.WithError(err).Error("Failed to commit transaction")
+		return err
+	}
+
+	return nil
 }
 
 func (r *repo) GetNewTransactions(ctx context.Context) ([]model.Transaction, error) {
@@ -161,33 +219,3 @@ func (r *repo) GetNewTransactions(ctx context.Context) ([]model.Transaction, err
 
 	return transactions, nil
 }
-
-// func (r *repo) ListenForNewOrders(ctx context.Context) {
-// 	// Подписываемся на уведомления
-// 	if _, err := r.db.ExecContext(ctx, "LISTEN new_order"); err != nil {
-// 		log.Fatalf("Failed to listen for new orders: %v", err)
-// 	}
-
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			log.Println("Stopping listening for new orders due to context cancellation")
-// 			return
-// 		default:
-// 			// Ожидаем уведомления
-// 			if notification, err := r.db.WaitForNotification(ctx); err == nil {
-// 				orderID := notification.Payload
-// 				order, err := repo.GetOrderByID(ctx, orderID)
-// 				if err != nil {
-// 					log.Printf("Failed to get order by ID %s: %v", orderID, err)
-// 					continue
-// 				}
-
-// 				go processOrder(ctx, repo, order)
-// 			} else {
-// 				log.Printf("Failed to wait for notification: %v", err)
-// 				time.Sleep(1 * time.Minute) // Retry after some time
-// 			}
-// 		}
-// 	}
-// }
