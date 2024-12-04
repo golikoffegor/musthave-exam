@@ -1,0 +1,37 @@
+@startuml "Отношения сущностей"
+
+entity User  {
+  + id (PK)
+  --
+  login
+  password
+  balance
+}
+
+entity Transaction  {
+  + OrderId (PK)
+  --
+  # user id (FK)
+  date
+  sum
+  action
+  status
+}
+
+map "map: ActionList<Integer, String>" as TransactionAction {
+ 1 => Withdraw
+ 2 => Debit
+}
+
+map "map: StatusList<Integer, String>" as TransactionStatus {
+ 1 => NEW
+ 2 => PROCESSING
+ 3 => INVALID
+ 4 => PROCESSED
+}
+
+User::id -right-o{ Transaction::user
+Transaction::action --> TransactionAction
+Transaction::status --> TransactionStatus
+  
+@enduml
