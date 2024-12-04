@@ -8,12 +8,12 @@ entity User  {
   balance
 }
 
-entity Transaction  {
+entity Transactions  {
   + OrderId (PK)
   --
   # user id (FK)
   date
-  sum
+  summ
   action
   status
 }
@@ -30,8 +30,8 @@ map "map: StatusList<Integer, String>" as TransactionStatus {
  4 => PROCESSED
 }
 
-User::id -right-o{ Transaction::user
-Transaction::action --> TransactionAction
-Transaction::status --> TransactionStatus
+User::id -right-o{ Transactions::user
+Transactions::action --> TransactionAction
+Transactions::status --> TransactionStatus
   
 @enduml

@@ -1,0 +1,45 @@
+
+name: musthave-exam
+networks:
+  musthave-exam-network:
+    driver: bridge
+
+version: '2.1'
+services:
+  gophermart:
+    restart: on-failure
+    build:
+      context: ../
+      dockerfile: DockerfileGopher
+    ports:
+      - "${APP_GOPH_PORT}:${APP_GOPH_PORT}"
+    environment:
+      - DATABASE_URI=${DATABASE_URI:?Please configure DATABASE_URI in the .env file}
+      - RUN_ADDRESS=${RUN_ADDRESS:?Please configure RUN_ADDRESS in the .env file}
+      - ACCRUAL_SYSTEM_ADDRESS=${ACCRUAL_SYSTEM_ADDRESS:?Please configure ACCRUAL_SYSTEM_ADDRESS in the .env file}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      accrual:
+        condition: service_started
+    networks:
+      - musthave-exam-network
+  
+  accrual:
+    restart: on-failure
+    build:
+      context: ../
+      dockerfile: DockerfileAccrual
+    ports:
+      - "${APP_ACCUR_PORT}:${APP_ACCUR_PORT}"
+    environment:
+      - APP_ACCUR_PORT=${APP_ACCUR_PORT:?Please configure APP_ACCUR_PORT in the .env file}
+      - BUILD_DATABASE_URI=${BUILD_DATABASE_URI:?Please configure BUILD_DATABASE_URI in the .env file}
+      - BUILD_ADDRESS_ACCUR=${BUILD_ADDRESS_ACCUR:?Please configure BUILD_ADDRESS_ACCUR in the .env file}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - musthave-exam-network
+
+

@@ -1,0 +1,39 @@
+swagger: "2.0"
+info:
+  description: "API для система расчета баллов Гофермарт"
+  version: "1.0.0"
+  title: "GopherMart Loyalty System API"
+host: "localhost:8020"
+schemes:
+- "http"
+paths:
+  /orders/{number}:
+    get:
+      summary: "Получение информации о расчете начислений баллов"
+      description: "Получение информации о расчете начислений баллов по номеру заказа"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "number"
+        in: "path"
+        description: "Номер заказа"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Информация о расчете начислений"
+          schema:
+            type: "object"
+            properties:
+              order:
+                type: "string"
+              status:
+                type: "string"
+              accrual:
+                type: "number"
+        204:
+          description: "Заказ не зарегистрирован в системе расчета"
+        429:
+          description: "Превышено количество запросов к сервису"
+        500:
+          description: "Внутренняя ошибка сервера"

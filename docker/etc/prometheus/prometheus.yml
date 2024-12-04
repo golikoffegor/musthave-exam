@@ -1,0 +1,24 @@
+global:
+  scrape_interval:     15s # Интервал между сборами метрик по умолчанию
+  evaluation_interval: 15s # Интервал оценки правил по умолчанию
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090'] # Собирать метрики Prometheus с самого себя
+
+  - job_name: 'gophermart'
+    static_configs:
+      - targets: ['gophermart:8080'] # Собирать метрики Gophermart
+
+  # - job_name: 'accrual'
+  #   static_configs:
+  #     - targets: ['accrual:8020'] # Собирать метрики Accrual
+
+  # - job_name: 'docker'
+  #   static_configs:
+  #     - targets: ['docker-host:9323'] # Собирать метрики Docker
+
+
+rule_files:
+  - 'alert.rules.yml' # Файл с правилами оповещений Prometheus
