@@ -57,7 +57,7 @@ func (o *order) processTransaction(ctx context.Context, transaction model.Transa
 			o.log.Info("Stopping processing for transaction due to context cancellation", transaction.ID)
 			return
 		default:
-			accrualResponse, err := app.FetchAccrual(o.address, transaction.ID)
+			accrualResponse, err := app.FetchAccrual(o.address, transaction.ID, o.log)
 			if err != nil {
 				o.log.WithError(err).Info("Error fetching accrual for transaction")
 				time.Sleep(o.iterTime) // Retry after some time

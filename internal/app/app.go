@@ -73,7 +73,7 @@ func NewConnection(dsn string) (*sql.DB, error) {
 	return db, err
 }
 
-func FetchAccrual(address string, transactionID string) (*model.AccrualResponse, error) {
+func FetchAccrual(address string, transactionID string, log *logrus.Logger) (*model.AccrualResponse, error) {
 	url := fmt.Sprintf(address+"/api/orders/%s", transactionID)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -81,7 +81,7 @@ func FetchAccrual(address string, transactionID string) (*model.AccrualResponse,
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("FetchAccrual resp.StatusCode: %v\n", resp.StatusCode)
+	log.Info("FetchAccrual resp.StatusCode: ", resp.StatusCode)
 
 	var accrualResponse model.AccrualResponse
 	if resp.StatusCode == http.StatusNoContent {
