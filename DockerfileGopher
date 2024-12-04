@@ -1,0 +1,18 @@
+# Dockerfile for /cmd/gophermart
+FROM golang:1.21.8
+
+# set work directory
+WORKDIR /project/gphrmrt/
+
+# copy the app code
+COPY go.sum go.mod .
+COPY internal ./internal
+COPY cmd ./cmd
+COPY migrations ./migrations
+RUN go mod download
+RUN go build -o . /project/gphrmrt/cmd/gophermart/.
+
+LABEL type="gophermart"
+
+# Run the application
+CMD ["/project/gphrmrt/gophermart", "-r=${ACCRUAL_SYSTEM_ADDRESS}", "-d=${DATABASE_URI}", "-a=${RUN_ADDRESS}"]

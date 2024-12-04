@@ -40,3 +40,6 @@
 # Диаграммы последовательностей
 
 ![Sequence](docs/diagrams/out/sequence.png)
+
+# Запуск программы
+make up

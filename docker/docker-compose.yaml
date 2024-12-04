@@ -1,11 +1,37 @@
 name: musthave-exam
 
-services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-      
 networks:
   musthave-exam-network:
     driver: bridge
+
+services:
+  gophermart:
+    build:
+      context: ../
+      dockerfile: DockerfileGopher
+    ports:
+      - "${APP_GOPH_PORT}:${APP_GOPH_PORT}"
+    environment:
+      - DATABASE_URI=${DATABASE_URI}
+      - RUN_ADDRESS=${RUN_ADDRESS}
+      - ACCRUAL_SYSTEM_ADDRESS=${ACCRUAL_SYSTEM_ADDRESS}
+    depends_on:
+      - postgres
+    networks:
+      - musthave-exam-network
+  
+  accrual:
+    build:
+      context: ../
+      dockerfile: DockerfileAccrual
+    ports:
+      - "${APP_ACCUR_PORT}:${APP_ACCUR_PORT}"
+    environment:
+      - DATABASE_URI=${DATABASE_URI}
+      - RUN_ADDRESS_ACCUR=${RUN_ADDRESS_ACCUR}
+    depends_on:
+      - postgres
+    networks:
+      - musthave-exam-network
+
+
